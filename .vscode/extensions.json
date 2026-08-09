@@ -1,0 +1,22 @@
+{
+  "recommendations": [
+    "biomejs.biome",
+    "bradlc.vscode-tailwindcss",
+    "Vercel.turbo-vsc",
+    "yoavbls.pretty-ts-errors",
+    "usernamehw.errorlens",
+    "TypeScriptTeam.native-preview",
+    "eamodio.gitlens",
+    "mikestead.dotenv",
+    "humao.rest-client",
+    "streetsidesoftware.code-spell-checker",
+    "wix.vscode-import-cost",
+    "dsznajder.es7-react-js-snippets"
+  ],
+  "unwantedRecommendations": [
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "formulahendry.auto-rename-tag",
+    "christian-kohler.path-intellisense"
+  ]
+}
