@@ -1,0 +1,22 @@
+{
+  "name": "job-finder-api",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "lint": "biome check .",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.0",
+    "hono": "^4.13.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.7",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^26.1.1",
+    "tsx": "^4.23.0",
+    "typescript": "7.0.2"
+  }
+}
