@@ -1,5 +1,5 @@
 {
-  "$schema": "https://turborepo.dev/schema.json",
+  "$schema": "./node_modules/turbo/schema.json",
   "ui": "tui",
   "tasks": {
     "build": {
@@ -16,12 +16,7 @@
     "dev": {
       "dependsOn": ["^build"],
       "cache": false,
-      "persistent": true,
-      "passThroughEnv": [
-        "DATABASE_URL",
-        "JOB_FINDER_API_PORT",
-        "JOB_FINDER_WEB_PORT"
-      ]
+      "persistent": true
     }
   }
 }

@@ -1,0 +1,9 @@
+{
+  "$schema": "../../node_modules/turbo/schema.json",
+  "extends": ["//"],
+  "tasks": {
+    "dev": {
+      "passThroughEnv": ["DATABASE_URL", "JOB_FINDER_API_PORT"]
+    }
+  }
+}
