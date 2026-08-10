@@ -23,6 +23,9 @@ importers:
       '@hono/node-server':
         specifier: ^2.1.0
         version: 2.1.0(hono@4.13.1)
+      '@repo/db':
+        specifier: workspace:*
+        version: link:../../packages/db
       hono:
         specifier: ^4.13.1
         version: 4.13.1

@@ -10,7 +10,7 @@ app.get("/", (c) => {
 serve(
   {
     fetch: app.fetch,
-    port: 3000,
+    port: Number(process.env.JOB_FINDER_API_PORT ?? 5000),
   },
   (info) => {
     console.log(`Server is running on http://localhost:${info.port}`);
