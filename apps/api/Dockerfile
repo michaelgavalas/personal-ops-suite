@@ -26,5 +26,9 @@ RUN rm -rf node_modules apps/*/node_modules packages/*/node_modules \
 FROM base AS runner
 ENV NODE_ENV=production
 COPY --from=builder --chown=node:node /repo .
+# A named volume mounts here to carry the socket over to the web container.
+# Docker seeds a fresh named volume from the image path, ownership included,
+# which is what lets the unprivileged node user create the socket inside it.
+RUN mkdir -p /run/api && chown node:node /run/api
 USER node
 CMD ["node", "apps/api/dist/index.js"]

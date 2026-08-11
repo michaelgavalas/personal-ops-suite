@@ -1,0 +1,33 @@
+{
+  "name": "@repo/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./server": {
+      "types": "./dist/server.d.ts",
+      "default": "./dist/server.js"
+    },
+    "./browser": {
+      "types": "./dist/browser.d.ts",
+      "default": "./dist/browser.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch --preserveWatchOutput",
+    "lint": "biome check .",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "api": "workspace:*",
+    "hono": "^4.13.1",
+    "undici": "^8.10.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.7",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^26.1.1",
+    "typescript": "7.0.2"
+  }
+}

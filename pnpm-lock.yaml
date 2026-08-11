@@ -48,6 +48,9 @@ importers:
 
   apps/job-finder-web:
     dependencies:
+      '@repo/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
       next:
         specifier: 16.3.0
         version: 16.3.0(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -79,6 +82,31 @@ importers:
       tailwindcss:
         specifier: ^4
         version: 4.3.3
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
+
+  packages/api-client:
+    dependencies:
+      api:
+        specifier: workspace:*
+        version: link:../../apps/api
+      hono:
+        specifier: ^4.13.1
+        version: 4.13.1
+      undici:
+        specifier: ^8.10.0
+        version: 8.10.0
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 2.5.7
+        version: 2.5.7
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^26.1.1
+        version: 26.2.0
       typescript:
         specifier: 7.0.2
         version: 7.0.2
@@ -1541,6 +1569,10 @@ packages:
   undici-types@8.3.0:
     resolution: {integrity: sha512-j375ScV60dom+YkPFIfTLcOiPxkN/buHz5GobjLhixFuANaNs3C9l4GmrWqejgXWJ7BbJcFYpTEUkS1Ge8bpZQ==}
 
+  undici@8.10.0:
+    resolution: {integrity: sha512-HvltHd7avK13QIw/oLe4qoOLyoVSoafqJ2jYOrtMRBkbYT31eiBQ8O0ehRKZiEZCMEyLFQNIADpgCWC5fALvYQ==}
+    engines: {node: '>=22.19.0'}
+
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
     engines: {node: '>=0.4'}
@@ -2527,5 +2559,7 @@ snapshots:
   undici-types@6.21.0: {}
 
   undici-types@8.3.0: {}
+
+  undici@8.10.0: {}
 
   xtend@4.0.2: {}

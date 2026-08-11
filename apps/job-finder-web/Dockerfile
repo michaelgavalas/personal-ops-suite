@@ -25,6 +25,9 @@ WORKDIR /repo/apps/job-finder-web
 COPY --from=builder --chown=node:node /repo/apps/job-finder-web/.next/standalone /repo/
 COPY --from=builder --chown=node:node /repo/apps/job-finder-web/.next/static ./.next/static
 COPY --from=builder --chown=node:node /repo/apps/job-finder-web/public ./public
+# Matches the api image so the shared socket volume gets the same ownership
+# whichever container Docker happens to create it from.
+RUN mkdir -p /run/api && chown node:node /run/api
 USER node
 # server.js reads PORT/HOSTNAME; 0.0.0.0 so Caddy can reach it across the network.
 ENV PORT=3000

@@ -1,18 +1,8 @@
-import { serve } from "@hono/node-server";
-import { Hono } from "hono";
+import { createAdaptorServer } from "@hono/node-server";
+import { app } from "./app.js";
+import { listen } from "./listen.js";
 
-const app = new Hono();
-
-app.get("/", (c) => {
-  return c.text("Hello Hono!");
-});
-
-serve(
-  {
-    fetch: app.fetch,
-    port: Number(process.env.API_PORT ?? 5000),
-  },
-  (info) => {
-    console.log(`Server is running on http://localhost:${info.port}`);
-  },
-);
+// createAdaptorServer rather than serve(): serve() hardcodes listen(port,
+// hostname), which has no way to express a unix socket path. This returns the
+// same server unlistened, so listen() can choose the transport.
+await listen(createAdaptorServer({ fetch: app.fetch }));

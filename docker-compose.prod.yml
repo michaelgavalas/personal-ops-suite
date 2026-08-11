@@ -3,8 +3,9 @@
 #
 #   docker compose -f docker-compose.prod.yml up -d --build
 #
-# Only caddy publishes ports. web, api and postgres are reachable exclusively on
-# the compose network, so the API has no route in from the internet.
+# Only caddy publishes ports. web and postgres are reachable exclusively on the
+# compose network, and the API not even that — it listens on a unix socket in a
+# volume shared with web, so it has no network presence at all.
 
 name: personal-ops
 
@@ -34,7 +35,11 @@ services:
       dockerfile: apps/job-finder-web/Dockerfile
     restart: unless-stopped
     environment:
-      API_URL: http://api:5000
+      API_SOCKET_PATH: /run/api/api.sock
+    volumes:
+      - api-socket:/run/api
+    depends_on:
+      - api
 
   api:
     build:
@@ -42,8 +47,10 @@ services:
       dockerfile: apps/api/Dockerfile
     restart: unless-stopped
     environment:
-      API_PORT: 5000
+      API_SOCKET_PATH: /run/api/api.sock
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/personal_ops
+    volumes:
+      - api-socket:/run/api
     depends_on:
       postgres:
         condition: service_healthy
@@ -67,3 +74,6 @@ volumes:
   postgres-data:
   caddy-data:
   caddy-config:
+  # Carries the API's unix socket between the api and web containers. Holds no
+  # durable state — safe to delete, it is recreated on the next boot.
+  api-socket:
