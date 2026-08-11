@@ -49,6 +49,11 @@ services:
     environment:
       API_SOCKET_PATH: /run/api/api.sock
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/personal_ops
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env}
+      # The public origin, path-free — a path here stops Better Auth matching
+      # any route. Cookie attributes and OAuth callbacks are built from this,
+      # never from the socket address the API answers on.
+      BETTER_AUTH_URL: https://${JOB_FINDER_DOMAIN:?set JOB_FINDER_DOMAIN in .env}
     volumes:
       - api-socket:/run/api
     depends_on:

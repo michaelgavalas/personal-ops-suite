@@ -1,12 +1,16 @@
 // Server-side proxy to the api app. The API listens on a unix socket in
 // production and is not reachable from the browser at all, so browser traffic
-// comes through here.
+// comes through here. The API owns auth too, so this carries sign-in traffic.
+//
+// The path is passed through unchanged rather than having /api stripped: the
+// API matches the same paths the browser uses, which is what keeps Better
+// Auth's callback URLs and cookie paths pointing somewhere real.
 //
 // This is a route handler rather than a `rewrites()` entry because Next
 // serializes next.config into required-server-files.json at build time, which
 // would bake the API location into the image instead of reading it at boot.
 
-import { apiFetch, apiOrigin } from "@repo/api-client/server";
+import { API_BASE_PATH, apiFetch, apiOrigin } from "@repo/api-client/server";
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +25,7 @@ async function proxy(
   const { path } = await params;
   const target = new URL(
     path.map(encodeURIComponent).join("/"),
-    `${apiOrigin()}/`,
+    `${apiOrigin()}${API_BASE_PATH}/`,
   );
   target.search = new URL(request.url).search;
 
