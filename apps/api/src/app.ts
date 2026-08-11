@@ -8,8 +8,7 @@ import { API_BASE_PATH } from "./base-path.js";
 // in does not first spend a query resolving the session it is about to create.
 const routes = new Hono<AppEnv>()
   .route("/", authRoutes)
-  .use("*", sessionMiddleware)
-  .get("/", (c) => c.text("Hello Hono!"));
+  .use("*", sessionMiddleware);
 
 export const app = new Hono().route(API_BASE_PATH, routes);
 
