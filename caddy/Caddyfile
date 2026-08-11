@@ -1,0 +1,8 @@
+{
+	email {$ACME_EMAIL}
+}
+
+{$JOB_FINDER_DOMAIN} {
+	encode brotli zstd gzip
+	reverse_proxy web:3000
+}

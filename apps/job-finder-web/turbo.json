@@ -3,7 +3,7 @@
   "extends": ["//"],
   "tasks": {
     "dev": {
-      "passThroughEnv": ["JOB_FINDER_WEB_PORT"]
+      "passThroughEnv": ["JOB_FINDER_WEB_PORT", "JOB_FINDER_API_URL"]
     }
   }
 }
