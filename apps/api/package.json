@@ -1,5 +1,5 @@
 {
-  "name": "job-finder-api",
+  "name": "api",
   "type": "module",
   "scripts": {
     "dev": "tsx watch --env-file-if-exists=.env src/index.ts",

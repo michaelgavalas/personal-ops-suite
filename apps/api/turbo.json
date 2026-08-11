@@ -3,7 +3,7 @@
   "extends": ["//"],
   "tasks": {
     "dev": {
-      "passThroughEnv": ["DATABASE_URL", "JOB_FINDER_API_PORT"]
+      "passThroughEnv": ["DATABASE_URL", "API_PORT"]
     }
   }
 }

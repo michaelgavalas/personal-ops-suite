@@ -1,9 +1,9 @@
-// Server-side proxy to job-finder-api. The API is only reachable on the private
+// Server-side proxy to the api app. The API is only reachable on the private
 // Docker network, so the browser talks to it through here rather than directly.
 //
 // This is a route handler rather than a `rewrites()` entry because Next
 // serializes next.config into required-server-files.json at build time, which
-// would bake JOB_FINDER_API_URL into the image instead of reading it at boot.
+// would bake API_URL into the image instead of reading it at boot.
 
 export const dynamic = "force-dynamic";
 
@@ -15,9 +15,9 @@ async function proxy(
   request: Request,
   { params }: { params: Promise<{ path: string[] }> },
 ) {
-  const apiUrl = process.env.JOB_FINDER_API_URL;
+  const apiUrl = process.env.API_URL;
   if (!apiUrl) {
-    return new Response("JOB_FINDER_API_URL is not set", { status: 500 });
+    return new Response("API_URL is not set", { status: 500 });
   }
 
   const { path } = await params;

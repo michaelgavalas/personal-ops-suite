@@ -34,15 +34,15 @@ services:
       dockerfile: apps/job-finder-web/Dockerfile
     restart: unless-stopped
     environment:
-      JOB_FINDER_API_URL: http://api:5000
+      API_URL: http://api:5000
 
   api:
     build:
       context: .
-      dockerfile: apps/job-finder-api/Dockerfile
+      dockerfile: apps/api/Dockerfile
     restart: unless-stopped
     environment:
-      JOB_FINDER_API_PORT: 5000
+      API_PORT: 5000
       DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/personal_ops
     depends_on:
       postgres:
