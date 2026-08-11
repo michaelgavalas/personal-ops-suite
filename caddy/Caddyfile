@@ -3,6 +3,6 @@
 }
 
 {$JOB_FINDER_DOMAIN} {
-	encode brotli zstd gzip
+	encode br zstd gzip
 	reverse_proxy web:3000
 }
