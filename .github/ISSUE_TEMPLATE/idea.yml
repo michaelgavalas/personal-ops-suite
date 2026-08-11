@@ -1,0 +1,19 @@
+name: Idea
+description: A tool to add, or something an existing one should do
+labels: [idea]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: The idea
+      description: What you'd want to be able to do.
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why it's worth building
+      description: >
+        The problem it actually solves. Worth writing down now — it's the thing
+        you'll have forgotten by the time you pick this up.

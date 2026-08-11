@@ -17,6 +17,7 @@
     "build": "tsc",
     "start": "node --env-file-if-exists=.env dist/index.js",
     "lint": "biome check .",
+    "test": "vitest run",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
@@ -30,6 +31,7 @@
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^26.1.1",
     "tsx": "^4.23.0",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "vitest": "^4.1.10"
   }
 }

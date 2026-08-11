@@ -1,0 +1,60 @@
+version: 2
+
+updates:
+  # One ecosystem entry covers the whole workspace: pnpm resolves from the
+  # single lockfile at the root, so per-package entries would fight over it.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    # Batched, because a lockfile-wide bump per dependency means every PR after
+    # the first needs a rebase.
+    groups:
+      dev-tooling:
+        patterns:
+          - "@biomejs/*"
+          - turbo
+          - typescript
+          - tsx
+          - vitest
+          - "@types/*"
+      next:
+        patterns:
+          - next
+          - react
+          - react-dom
+          - eslint-config-next
+          - "@tailwindcss/*"
+          - tailwindcss
+      backend:
+        patterns:
+          - hono
+          - "@hono/*"
+          - better-auth
+          - drizzle-orm
+          - drizzle-kit
+          - pg
+          - undici
+    ignore:
+      # Pinned to the Node version in .node-version and the Dockerfiles, which
+      # Dependabot cannot see. Bump all three together, by hand.
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+
+  # Both images share a base, but Dependabot resolves Dockerfiles per directory
+  # and has no notion of the pair, so each is listed.
+  - package-ecosystem: docker
+    directories:
+      - /apps/api
+      - /apps/job-finder-web
+    schedule:
+      interval: weekly
+      day: monday

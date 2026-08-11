@@ -1,10 +1,12 @@
 {
   "name": "personal-ops-suite",
   "private": true,
+  "license": "Apache-2.0",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint",
+    "test": "turbo run test",
     "format": "biome format --write .",
     "check-types": "turbo run check-types"
   },

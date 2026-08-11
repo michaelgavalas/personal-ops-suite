@@ -1,36 +1,70 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# job-finder-web
 
-## Getting Started
+Job Finder's frontend. Next.js App Router, Tailwind, React 19.
 
-First, run the development server:
+Fair warning on scope: the only thing the UI does today is sign you in and out.
+The wiring below is real and finished; the product on top of it isn't started.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
+## Running it
+
+From the repo root — `pnpm dev` brings this up with the API behind it. On its
+own:
+
+```sh
+cp .env.example .env
 pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+[localhost:3000](http://localhost:3000). The API needs to be running too, or
+every `/api/*` request fails at the proxy.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Talking to the API
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The API is unreachable from the browser by design — in production it has no
+network presence at all — so everything goes through the catch-all proxy at
+[`app/api/[...path]/route.ts`](app/api/%5B...path%5D/route.ts). It forwards to
+whichever transport is configured and passes the path through untouched.
 
-## Learn More
+It's a route handler rather than a `rewrites()` entry because Next serializes
+`next.config` into the build output, which would bake the API's location into
+the image instead of reading it at boot.
 
-To learn more about Next.js, take a look at the following resources:
+For actual calls, use the typed clients rather than raw `fetch`:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```ts
+// client components
+import { api } from "@repo/api-client/browser";
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+// server components, route handlers, server actions
+import { apiClient } from "@repo/api-client/server";
+const res = await apiClient(await headers()).api.something.$get();
+```
 
-## Deploy on Vercel
+The server client forwards nothing implicitly — a Server Component has no
+ambient request to read — so pass the inbound headers when the call should
+happen as the signed-in user, and omit them when it shouldn't.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+For auth specifically, `@repo/auth/react` exports the usual
+`signIn` / `signUp` / `signOut` / `useSession`. It's deliberately unconfigured:
+its defaults point at the page's own origin and `/api/auth`, which is exactly
+where the proxy is.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Build notes
+
+Three settings in [`next.config.ts`](next.config.ts) exist for the Docker image
+and are easy to break by accident:
+
+- `output: "standalone"` — the runner copies `.next/standalone` and little else.
+- `compress: false` — Caddy owns compression. Next's gzip would get there first,
+  and Caddy passes through anything that already has a `Content-Encoding`, which
+  pins every client to gzip for no reason.
+- `outputFileTracingRoot` — points at the repo root so tracing picks up the
+  workspace packages hoisted there.
+
+## Environment
+
+| | |
+| --- | --- |
+| `API_URL` | where the API lives in development |
+| `API_SOCKET_PATH` | production only, and takes precedence over `API_URL` |
+| `JOB_FINDER_WEB_PORT` | dev/start port, defaults to 3000 |

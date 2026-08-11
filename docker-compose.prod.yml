@@ -9,6 +9,18 @@
 
 name: personal-ops
 
+# The api image is used by two services — the server and the one-shot migration
+# that runs ahead of it. Sharing the build here names the image once, so the
+# second service is a cache hit rather than a second build.
+x-api-image: &api-image
+  build:
+    context: .
+    dockerfile: apps/api/Dockerfile
+  image: personal-ops-api
+
+x-database-url: &database-url
+  DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/personal_ops
+
 services:
   caddy:
     image: caddy:2-alpine
@@ -41,14 +53,25 @@ services:
     depends_on:
       - api
 
+  # Applies pending migrations, then exits. Runs as its own service rather than
+  # from the API's entrypoint so that the schema is never touched by more than
+  # one process, however many API containers there turn out to be.
+  migrate:
+    <<: *api-image
+    restart: "no"
+    command: node packages/db/dist/migrate.js
+    environment:
+      <<: *database-url
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   api:
-    build:
-      context: .
-      dockerfile: apps/api/Dockerfile
+    <<: *api-image
     restart: unless-stopped
     environment:
+      <<: *database-url
       API_SOCKET_PATH: /run/api/api.sock
-      DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/personal_ops
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env}
       # The public origin, path-free — a path here stops Better Auth matching
       # any route. Cookie attributes and OAuth callbacks are built from this,
@@ -56,9 +79,11 @@ services:
       BETTER_AUTH_URL: https://${JOB_FINDER_DOMAIN:?set JOB_FINDER_DOMAIN in .env}
     volumes:
       - api-socket:/run/api
+    # Only on migrate: it already waits for a healthy postgres, and Compose
+    # resolves the chain, so naming postgres here as well would be noise.
     depends_on:
-      postgres:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
 
   postgres:
     image: postgres:18-alpine

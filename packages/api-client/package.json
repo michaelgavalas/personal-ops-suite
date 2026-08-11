@@ -21,6 +21,7 @@
     "build": "tsc",
     "dev": "tsc --watch --preserveWatchOutput",
     "lint": "biome check .",
+    "test": "vitest run",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
@@ -32,6 +33,7 @@
     "@biomejs/biome": "2.5.7",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^26.1.1",
-    "typescript": "7.0.2"
+    "typescript": "7.0.2",
+    "vitest": "^4.1.10"
   }
 }

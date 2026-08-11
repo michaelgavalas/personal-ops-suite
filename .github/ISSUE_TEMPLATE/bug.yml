@@ -1,0 +1,33 @@
+name: Bug
+description: Something behaves differently than it should
+labels: [bug]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Where
+      options:
+        - api
+        - job-finder-web
+        - auth
+        - db / migrations
+        - deployment (docker, caddy)
+        - not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens
+      description: What you did, what you expected, what you got instead.
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else
+      description: >
+        Logs, the environment it happened in (dev or the VPS), whether it
+        reproduces. Skip what doesn't apply.
