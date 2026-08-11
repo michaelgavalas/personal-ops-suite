@@ -21,8 +21,8 @@
   },
   "dependencies": {
     "@hono/node-server": "^2.1.0",
-    "@repo/auth": "workspace:*",
-    "@repo/db": "workspace:*",
+    "@repo/api-auth": "workspace:*",
+    "@repo/api-core": "workspace:*",
     "hono": "^4.13.1"
   },
   "devDependencies": {

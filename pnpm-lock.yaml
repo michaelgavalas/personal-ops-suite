@@ -23,12 +23,12 @@ importers:
       '@hono/node-server':
         specifier: ^2.1.0
         version: 2.1.0(hono@4.13.1)
-      '@repo/auth':
+      '@repo/api-auth':
         specifier: workspace:*
-        version: link:../../packages/auth
-      '@repo/db':
+        version: link:../../packages/api-auth
+      '@repo/api-core':
         specifier: workspace:*
-        version: link:../../packages/db
+        version: link:../../packages/api-core
       hono:
         specifier: ^4.13.1
         version: 4.13.1
@@ -92,6 +92,31 @@ importers:
         specifier: 7.0.2
         version: 7.0.2
 
+  packages/api-auth:
+    dependencies:
+      '@repo/api-core':
+        specifier: workspace:*
+        version: link:../api-core
+      '@repo/auth':
+        specifier: workspace:*
+        version: link:../auth
+      hono:
+        specifier: ^4.13.1
+        version: 4.13.1
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 2.5.7
+        version: 2.5.7
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^26.1.1
+        version: 26.2.0
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
+
   packages/api-client:
     dependencies:
       api:
@@ -103,6 +128,28 @@ importers:
       undici:
         specifier: ^8.10.0
         version: 8.10.0
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 2.5.7
+        version: 2.5.7
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../typescript-config
+      '@types/node':
+        specifier: ^26.1.1
+        version: 26.2.0
+      typescript:
+        specifier: 7.0.2
+        version: 7.0.2
+
+  packages/api-core:
+    dependencies:
+      '@repo/auth':
+        specifier: workspace:*
+        version: link:../auth
+      hono:
+        specifier: ^4.13.1
+        version: 4.13.1
     devDependencies:
       '@biomejs/biome':
         specifier: 2.5.7

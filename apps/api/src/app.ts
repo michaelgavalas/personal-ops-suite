@@ -1,28 +1,15 @@
-import { auth, getSession, type Session } from "@repo/auth/server";
+import { authRoutes } from "@repo/api-auth";
+import { type AppEnv, sessionMiddleware } from "@repo/api-core";
 import { Hono } from "hono";
 import { API_BASE_PATH } from "./base-path.js";
 
-type Variables = {
-  session: Session | null;
-};
-
-const routes = new Hono<{ Variables: Variables }>()
-  // Mounted before the session middleware: these endpoints establish the
-  // session rather than consuming it, and Better Auth does its own routing
-  // from the raw request.
-  .on(["GET", "POST"], "/auth/*", (c) => auth().handler(c.req.raw))
-  .use("*", async (c, next) => {
-    c.set("session", await getSession(c.req.raw.headers));
-    await next();
-  })
-  .get("/", (c) => c.text("Hello Hono!"))
-  .get("/me", (c) => {
-    const session = c.get("session");
-    if (!session) {
-      return c.json({ error: "unauthenticated" }, 401);
-    }
-    return c.json({ user: session.user });
-  });
+// Composition only — routes belong to their feature package. Order matters:
+// the auth routes are registered before the session middleware so that signing
+// in does not first spend a query resolving the session it is about to create.
+const routes = new Hono<AppEnv>()
+  .route("/", authRoutes)
+  .use("*", sessionMiddleware)
+  .get("/", (c) => c.text("Hello Hono!"));
 
 export const app = new Hono().route(API_BASE_PATH, routes);
 

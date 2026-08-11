@@ -1,0 +1,29 @@
+{
+  "name": "@repo/api-auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch --preserveWatchOutput",
+    "lint": "biome check .",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@repo/api-core": "workspace:*",
+    "@repo/auth": "workspace:*",
+    "hono": "^4.13.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.5.7",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^26.1.1",
+    "typescript": "7.0.2"
+  }
+}
