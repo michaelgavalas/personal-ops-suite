@@ -3,6 +3,9 @@
 }
 
 {$JOB_FINDER_DOMAIN} {
-	encode br zstd gzip
+	# Stock Caddy registers only these two encoders; brotli would need a custom
+	# binary built with the cbrotli plugin, and an unregistered name here is a
+	# hard startup failure, not a warning.
+	encode zstd gzip
 	reverse_proxy web:3000
 }
