@@ -2,6 +2,8 @@ import path from "node:path";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // @repo/ui ships its components as TSX source rather than a build step.
+  transpilePackages: ["@repo/ui"],
   // Emits .next/standalone with only the files the server needs, so the image
   // doesn't have to carry node_modules.
   output: "standalone",

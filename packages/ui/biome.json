@@ -1,0 +1,18 @@
+{
+  "root": false,
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "extends": "//",
+  "files": {
+    "includes": ["**", "!src/components", "!src/hooks"]
+  },
+  "css": {
+    "parser": {
+      "tailwindDirectives": true
+    }
+  },
+  "linter": {
+    "domains": {
+      "react": "recommended"
+    }
+  }
+}
