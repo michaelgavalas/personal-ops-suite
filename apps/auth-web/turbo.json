@@ -4,11 +4,11 @@
   "tasks": {
     "dev": {
       "passThroughEnv": [
-        "JOB_FINDER_WEB_PORT",
+        "AUTH_WEB_PORT",
         "API_URL",
         "API_SOCKET_PATH",
-        "APP_URL",
-        "AUTH_URL"
+        "ALLOWED_REDIRECT_ORIGINS",
+        "DEFAULT_REDIRECT_URL"
       ]
     }
   }

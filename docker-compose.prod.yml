@@ -21,6 +21,15 @@ x-api-image: &api-image
 x-database-url: &database-url
   DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/personal_ops
 
+# Every public host is a subdomain of one registrable parent, and that is a
+# requirement rather than a convention: the session cookie is scoped to the
+# parent so that signing in on the auth host is visible to the app hosts.
+# Derived here rather than set individually so the two cannot drift apart.
+x-hosts: &hosts
+  ROOT_DOMAIN: ${ROOT_DOMAIN:?set ROOT_DOMAIN in .env}
+  JOB_FINDER_DOMAIN: jobs.${ROOT_DOMAIN}
+  AUTH_DOMAIN: auth.${ROOT_DOMAIN}
+
 services:
   caddy:
     image: caddy:2-alpine
@@ -30,7 +39,7 @@ services:
       - "443:443"
       - "443:443/udp"
     environment:
-      JOB_FINDER_DOMAIN: ${JOB_FINDER_DOMAIN:?set JOB_FINDER_DOMAIN in .env}
+      <<: *hosts
       ACME_EMAIL: ${ACME_EMAIL:?set ACME_EMAIL in .env}
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
@@ -40,6 +49,7 @@ services:
       - caddy-config:/config
     depends_on:
       - web
+      - auth-web
 
   web:
     build:
@@ -48,6 +58,28 @@ services:
     restart: unless-stopped
     environment:
       API_SOCKET_PATH: /run/api/api.sock
+      # proxy.ts builds the sign-in redirect from these. Configured rather than
+      # read off the request, which arrives bearing the internal container host.
+      APP_URL: https://jobs.${ROOT_DOMAIN}
+      AUTH_URL: https://auth.${ROOT_DOMAIN}
+    volumes:
+      - api-socket:/run/api
+    depends_on:
+      - api
+
+  # The sign-in and sign-up screens. Reaches the API over the same socket as
+  # every other frontend — it holds no credentials of its own and talks to
+  # Better Auth through the identical /api/auth proxy.
+  auth-web:
+    build:
+      context: .
+      dockerfile: apps/auth-web/Dockerfile
+    restart: unless-stopped
+    environment:
+      API_SOCKET_PATH: /run/api/api.sock
+      DEFAULT_REDIRECT_URL: https://jobs.${ROOT_DOMAIN}
+      # A ?redirect_to= naming anything else is discarded rather than followed.
+      ALLOWED_REDIRECT_ORIGINS: https://jobs.${ROOT_DOMAIN}
     volumes:
       - api-socket:/run/api
     depends_on:
@@ -75,8 +107,17 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET:?set BETTER_AUTH_SECRET in .env}
       # The public origin, path-free — a path here stops Better Auth matching
       # any route. Cookie attributes and OAuth callbacks are built from this,
-      # never from the socket address the API answers on.
-      BETTER_AUTH_URL: https://${JOB_FINDER_DOMAIN:?set JOB_FINDER_DOMAIN in .env}
+      # never from the socket address the API answers on. The auth host, since
+      # that is where sign-in actually happens.
+      BETTER_AUTH_URL: https://auth.${ROOT_DOMAIN}
+      # Scopes the session cookie to the parent domain so that a sign-in on the
+      # auth host is a sign-in everywhere. Host-only, the default, would leave
+      # every app but this one seeing a logged-out visitor.
+      AUTH_COOKIE_DOMAIN: .${ROOT_DOMAIN}
+      # The apps still proxy /api/auth on their own origins to read sessions
+      # and sign out, so requests arrive under more than one Origin and Better
+      # Auth turns away any it was not told to expect.
+      BETTER_AUTH_TRUSTED_ORIGINS: https://auth.${ROOT_DOMAIN},https://jobs.${ROOT_DOMAIN}
     volumes:
       - api-socket:/run/api
     # Only on migrate: it already waits for a healthy postgres, and Compose

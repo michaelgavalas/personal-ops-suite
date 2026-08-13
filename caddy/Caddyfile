@@ -2,10 +2,21 @@
 	email {$ACME_EMAIL}
 }
 
-{$JOB_FINDER_DOMAIN} {
-	# Stock Caddy registers only these two encoders; brotli would need a custom
-	# binary built with the cbrotli plugin, and an unregistered name here is a
-	# hard startup failure, not a warning.
+# Stock Caddy registers only these two encoders; brotli would need a custom
+# binary built with the cbrotli plugin, and an unregistered name here is a
+# hard startup failure, not a warning.
+(common) {
 	encode zstd gzip
+}
+
+{$JOB_FINDER_DOMAIN} {
+	import common
 	reverse_proxy web:3000
+}
+
+# Sits on a sibling subdomain of the apps it lets people into, which is what
+# lets one session cookie — scoped to the parent domain — cover all of them.
+{$AUTH_DOMAIN} {
+	import common
+	reverse_proxy auth-web:3000
 }

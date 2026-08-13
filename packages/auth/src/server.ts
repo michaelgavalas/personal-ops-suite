@@ -3,14 +3,30 @@ import { accounts, sessions, users, verifications } from "@repo/db/auth";
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 
+import { AUTH_BASE_PATH } from "./base-path.js";
+
+// Re-exported so existing importers keep their single entrypoint; apps that
+// only need the path should import ./base-path directly and skip this module.
+export { AUTH_BASE_PATH };
+
 /**
- * Path the auth routes answer on, identical on the API and in the browser
- * because the web app proxies /api/* through without rewriting it. Better Auth
- * matches this against the raw request path, so the two must not diverge.
+ * Origins allowed to drive auth besides baseURL itself, as a comma-separated
+ * list.
+ *
+ * The sign-in pages live on their own subdomain, but every other app still
+ * proxies /api/auth on its own origin to read the session and sign out. So
+ * requests legitimately arrive carrying several different Origin headers, and
+ * Better Auth rejects any it was not told to expect.
  */
-export const AUTH_BASE_PATH = "/api/auth";
+function trustedOrigins() {
+  return (process.env.BETTER_AUTH_TRUSTED_ORIGINS ?? "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+}
 
 function create() {
+  const cookieDomain = process.env.AUTH_COOKIE_DOMAIN;
   const db = createDb({ users, sessions, accounts, verifications });
 
   return betterAuth({
@@ -20,6 +36,7 @@ function create() {
     // rather than the api.internal placeholder the socket is dialled with.
     baseURL: process.env.BETTER_AUTH_URL,
     basePath: AUTH_BASE_PATH,
+    trustedOrigins: trustedOrigins(),
     // Reads BETTER_AUTH_SECRET from the environment. Set it, or every restart
     // invalidates all existing sessions.
     database: drizzleAdapter(db, {
@@ -38,6 +55,14 @@ function create() {
       enabled: true,
     },
     advanced: {
+      // Sign-in happens on the auth subdomain, but the session it creates has
+      // to be readable by every sibling app. Left host-only, signing in would
+      // appear to succeed and every other subdomain would still see a logged
+      // out visitor. Skipped when unset, which is what development wants:
+      // cookies ignore the port, so apps on localhost already share a host.
+      ...(cookieDomain && {
+        crossSubDomainCookies: { enabled: true, domain: cookieDomain },
+      }),
       // A unix socket has no peer address, so without this every caller looks
       // like the same anonymous client and one user's failed logins would rate
       // limit everyone. Caddy sets the header and the web proxy passes it on.

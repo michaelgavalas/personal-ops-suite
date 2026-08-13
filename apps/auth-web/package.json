@@ -1,11 +1,11 @@
 {
-  "name": "job-finder-web",
+  "name": "auth-web",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --port ${JOB_FINDER_WEB_PORT:-3000}",
+    "dev": "next dev --port ${AUTH_WEB_PORT:-3001}",
     "build": "next build",
-    "start": "next start --port ${JOB_FINDER_WEB_PORT:-3000}",
+    "start": "next start --port ${AUTH_WEB_PORT:-3001}",
     "lint": "biome check .",
     "check-types": "next typegen && tsc --noEmit"
   },

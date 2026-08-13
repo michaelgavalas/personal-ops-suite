@@ -11,6 +11,14 @@
     "./react": {
       "types": "./dist/react.d.ts",
       "default": "./dist/react.js"
+    },
+    "./cookies": {
+      "types": "./dist/cookies.d.ts",
+      "default": "./dist/cookies.js"
+    },
+    "./base-path": {
+      "types": "./dist/base-path.d.ts",
+      "default": "./dist/base-path.js"
     }
   },
   "scripts": {
