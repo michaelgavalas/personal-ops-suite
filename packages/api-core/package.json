@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@repo/auth": "workspace:*",
-    "hono": "^4.13.1"
+    "hono": "^4.13.2"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.7",
