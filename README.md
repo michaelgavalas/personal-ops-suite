@@ -4,21 +4,22 @@ A monorepo for the small self-hosted tools I actually use. The idea is that ever
 tool gets its own frontend but shares one backend, one database, and one login —
 so adding the third tool costs a lot less than adding the first.
 
-Right now there is one tool, **Job Finder**, and it is still mostly scaffolding.
-Sign-in is its own app already, because the second tool shouldn't have to
-reinvent it. The plumbing underneath is the part that's finished.
+There are no tools yet — what exists is the plumbing they'll share, and that
+part is finished. Sign-in is already its own app rather than something a tool
+owns, so the first tool doesn't have to build it and the second doesn't have to
+reinvent it.
 
 ## How it fits together
 
 ```
                    ┌──────────────────────────────────────────────┐
    browser ──443──▶│ caddy          TLS, compression              │
-                   └────┬────────────────────────────┬────────────┘
-        auth.<root>     │                            │  jobs.<root>
-                   ┌────▼─────────────────┐  ┌───────▼────────────┐
-                   │ auth-web             │  │ job-finder-web     │
-                   │ sign in / sign up    │  │ gated by proxy.ts  │
-                   └────┬─────────────────┘  └───────┬────────────┘
+                   └────┬─────────────────────────────┬───────────┘
+        auth.<root>     │                             ┊  <tool>.<root>
+                   ┌────▼─────────────────┐  ┌────────┴───────────┐
+                   │ auth-web             │  ┊ a tool's frontend  ┊
+                   │ sign in / sign up    │  ┊ gated by proxy.ts  ┊
+                   └────┬─────────────────┘  └────────┬───────────┘
                         │   /api/* proxied straight through
                         └─────────────┬──────────────┘
                                       │ unix:/run/api/api.sock
@@ -31,11 +32,13 @@ reinvent it. The plumbing underneath is the part that's finished.
                    └──────────────────────────────────────────────┘
 ```
 
+The dotted box is the shape a tool takes, not something that exists today.
+
 Three things about this are worth calling out, because they explain most of the
 code you'll read:
 
 **The API has no network presence in production.** It listens on a unix socket
-inside a volume shared with the web container. Nothing can dial it — not the
+inside a volume shared with the frontend container. Nothing can dial it — not the
 internet, not another container, not a stray process on the host. Every request
 arrives through the Next.js proxy at `/api/*`, which forwards over the socket
 with an undici dispatcher.
@@ -46,13 +49,14 @@ paths and OAuth callbacks from the public origin, so if the browser's path and
 the server's path drifted apart, sign-in would break in ways that are miserable
 to debug. Keeping them identical makes the whole thing boring instead.
 
-**One session, several subdomains.** Signing in happens on `auth.<root>`; each
+**One session, several subdomains.** Signing in happens on `auth.<root>`; a
 tool sits on its own subdomain of the same parent, and the session cookie is
 scoped to that parent, so one sign-in covers all of them. This is why
 production derives every host from a single `ROOT_DOMAIN` instead of taking
 them one at a time — let two of them drift onto different parents and the
 cookie silently stops being shared, which looks like a successful sign-in that
-every tool ignores.
+every tool ignores. Only the auth host exists today, so this is machinery
+waiting for its first tenant rather than something currently load-bearing.
 
 A signed-out visitor to a tool is bounced to the auth app with a `redirect_to`
 naming where they were headed. That parameter comes from the URL, so the auth
@@ -70,7 +74,6 @@ is left host-only, since the apps differ only by port and cookies ignore ports.
 | --- | --- |
 | [`apps/api`](apps/api) | The backend. Composition only — it mounts feature routers and picks a transport. |
 | [`apps/auth-web`](apps/auth-web) | Sign in and sign up. The one door into every tool. |
-| [`apps/job-finder-web`](apps/job-finder-web) | Job Finder's frontend. Next.js, Tailwind, standalone output. |
 | [`packages/api-core`](packages/api-core) | The `AppEnv` type and session middleware every feature router builds against. |
 | [`packages/api-auth`](packages/api-auth) | The `/auth/*` routes, handed wholesale to Better Auth. |
 | [`packages/api-client`](packages/api-client) | Typed RPC clients for the browser and the server, plus the proxy handler. |
@@ -83,9 +86,10 @@ Backend features live in their own `api-*` package rather than in `apps/api`.
 The app itself stays a list of `.route()` calls, which keeps feature code
 portable if a second backend ever needs it.
 
-Database tables live in a Postgres schema named after the tool — `auth` for
-shared identity, `job_finder` for Job Finder. Anything a second tool would need
-belongs in `auth` or a new shared schema, never in a tool's own.
+Database tables live in a Postgres schema named after the tool. Only `auth`,
+for shared identity, exists today; a tool gets its own schema alongside it.
+Anything a second tool would need belongs in `auth` or a new shared schema,
+never in a tool's own.
 
 `packages/ui` holds the shadcn components verbatim, built on Base UI. They are
 exported as TSX source rather than built, so apps consuming them need
@@ -104,7 +108,6 @@ docker compose up -d          # postgres on :5432
 
 cp apps/api/.env.example apps/api/.env
 cp apps/auth-web/.env.example apps/auth-web/.env
-cp apps/job-finder-web/.env.example apps/job-finder-web/.env
 cp packages/db/.env.example packages/db/.env
 
 # generate a real secret for apps/api/.env
@@ -114,13 +117,12 @@ pnpm --filter @repo/db db:migrate
 pnpm dev
 ```
 
-That gives you Job Finder on [localhost:3000](http://localhost:3000), the auth
-app on [localhost:3001](http://localhost:3001), and the API on
-[localhost:5000](http://localhost:5000).
+That gives you the auth app on [localhost:3001](http://localhost:3001) and the
+API on [localhost:5000](http://localhost:5000).
 
-Job Finder redirects you to the auth app until you're signed in, so
-`localhost:3001` is where a fresh setup actually starts. Create an account
-there and you land back on Job Finder.
+`localhost:3001` is where a fresh setup starts — create an account there. With
+no tool to hand off to yet, signing in lands you back on the auth app's own
+page; a tool added later becomes the `DEFAULT_REDIRECT_URL`.
 
 ### Environment
 
@@ -131,7 +133,6 @@ development — the one at the root is for production only.
 | --- | --- | --- |
 | `apps/api/.env` | the API | `DATABASE_URL`, `API_PORT`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `BETTER_AUTH_TRUSTED_ORIGINS` |
 | `apps/auth-web/.env` | Next.js | `API_URL`, `DEFAULT_REDIRECT_URL`, `ALLOWED_REDIRECT_ORIGINS` |
-| `apps/job-finder-web/.env` | Next.js | `API_URL`, `APP_URL`, `AUTH_URL` |
 | `packages/db/.env` | drizzle-kit | `DATABASE_URL` |
 | `.env` | `docker-compose.prod.yml` | `ROOT_DOMAIN`, ACME email, Postgres password, auth secret |
 
@@ -143,10 +144,11 @@ where signing in happens.
 `BETTER_AUTH_TRUSTED_ORIGINS` has to list every tool as well, because each one
 proxies `/api/auth` on its own origin to read the session and sign out. Miss one
 and those calls come back `403 INVALID_ORIGIN` while sign-in itself looks fine.
+Today the auth app is the only entry.
 
-`APP_URL` and `AUTH_URL` are configured rather than read off the request. Behind
-Caddy the request carries the internal container address, so a redirect built
-from it would send people somewhere unreachable.
+A tool's frontend configures its own public origin rather than reading it off
+the request: behind Caddy the request carries the internal container address,
+so a redirect built from it would send people somewhere unreachable.
 
 ## Day to day
 
@@ -167,8 +169,8 @@ After editing a schema in `packages/db/src`, run `db:generate` and commit the
 generated SQL alongside it. Both belong in the same commit — a schema change
 without its migration is a broken deploy waiting to happen.
 
-CI runs lint, types, build, and tests on every pull request, and builds all
-three Docker images when anything that affects packaging changes. `main`
+CI runs lint, types, build, and tests on every pull request, and builds both
+Docker images when anything that affects packaging changes. `main`
 requires a green run to merge into.
 
 `check-types` runs `next typegen` before `tsc` in the Next apps. `PageProps`
@@ -185,9 +187,10 @@ cp .env.example .env          # then fill it in for real
 docker compose -f docker-compose.prod.yml up -d --build
 ```
 
-Point `auth.<root>` and `jobs.<root>` at the box first, both of them — Caddy
-tries to get a certificate for each on startup, and Let's Encrypt has rate
-limits worth respecting.
+Point `auth.<root>` at the box first — Caddy tries to get a certificate on
+startup, and Let's Encrypt has rate limits worth respecting. Adding a tool
+means adding its subdomain to DNS and a block to the Caddyfile before the
+next deploy, for the same reason.
 
 `.env` carries `ROOT_DOMAIN` and nothing more domain-shaped. Compose derives
 every host and origin from it, which is deliberate: the shared session cookie
@@ -207,13 +210,13 @@ many API containers there end up being.
 
 ## State of things
 
-Working: auth (email/password) end to end across two subdomains, the socket
-transport, the typed RPC client, the shared component library, the production
-stack, migrations, CI.
+Working: auth (email/password) end to end, the socket transport, the typed RPC
+client, the shared component library, the production stack, migrations, CI.
 
-Not started: everything Job Finder actually does. `job_finder.saved_jobs` exists
-in the database and nothing reads it yet, and the frontend is a signed-in
-landing page and not much else.
+Not started: any actual tool. This is a foundation with nothing built on it
+yet — the cross-subdomain session, the per-tool schema convention, and the
+`api-*` feature-router split are all in place and all currently serving a
+single app. The first tool is where they get tested for real.
 
 Known gaps: CI only rebuilds the Docker images when a packaging path changes,
 so an image can break from a source change and go unnoticed until the next one

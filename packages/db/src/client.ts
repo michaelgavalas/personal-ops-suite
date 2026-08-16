@@ -3,7 +3,7 @@ import { Pool } from "pg";
 
 /**
  * Builds a Drizzle client for a single app. Pass only the schemas that app
- * needs, e.g. `createDb({ ...auth, ...jobFinder })`.
+ * needs, e.g. `createDb({ ...auth })`.
  */
 export function createDb<TSchema extends Record<string, unknown>>(
   schema: TSchema,

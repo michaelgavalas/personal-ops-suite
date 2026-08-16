@@ -86,7 +86,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        app: [api, job-finder-web, auth-web]
+        app: [api, auth-web]
     steps:
       - uses: actions/checkout@v6
 

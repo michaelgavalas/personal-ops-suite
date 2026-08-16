@@ -11,10 +11,6 @@
     "./auth": {
       "types": "./dist/auth/schema.d.ts",
       "default": "./dist/auth/schema.js"
-    },
-    "./job-finder": {
-      "types": "./dist/job-finder/schema.d.ts",
-      "default": "./dist/job-finder/schema.js"
     }
   },
   "scripts": {

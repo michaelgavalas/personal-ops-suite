@@ -3,9 +3,9 @@
 #
 #   docker compose -f docker-compose.prod.yml up -d --build
 #
-# Only caddy publishes ports. web and postgres are reachable exclusively on the
-# compose network, and the API not even that — it listens on a unix socket in a
-# volume shared with web, so it has no network presence at all.
+# Only caddy publishes ports. auth-web and postgres are reachable exclusively
+# on the compose network, and the API not even that — it listens on a unix
+# socket in a volume shared with auth-web, so it has no network presence at all.
 
 name: personal-ops
 
@@ -21,13 +21,13 @@ x-api-image: &api-image
 x-database-url: &database-url
   DATABASE_URL: postgresql://postgres:${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in .env}@postgres:5432/personal_ops
 
-# Every public host is a subdomain of one registrable parent, and that is a
-# requirement rather than a convention: the session cookie is scoped to the
-# parent so that signing in on the auth host is visible to the app hosts.
-# Derived here rather than set individually so the two cannot drift apart.
+# Every public host is a subdomain of one registrable parent. Only the auth
+# host exists today, but the session cookie is scoped to the parent so that a
+# sign-in here is visible to any tool added later on a sibling subdomain —
+# which only holds while all of them sit under the one parent, so they are
+# derived from it rather than set by hand.
 x-hosts: &hosts
   ROOT_DOMAIN: ${ROOT_DOMAIN:?set ROOT_DOMAIN in .env}
-  JOB_FINDER_DOMAIN: jobs.${ROOT_DOMAIN}
   AUTH_DOMAIN: auth.${ROOT_DOMAIN}
 
 services:
@@ -48,24 +48,7 @@ services:
       - caddy-data:/data
       - caddy-config:/config
     depends_on:
-      - web
       - auth-web
-
-  web:
-    build:
-      context: .
-      dockerfile: apps/job-finder-web/Dockerfile
-    restart: unless-stopped
-    environment:
-      API_SOCKET_PATH: /run/api/api.sock
-      # proxy.ts builds the sign-in redirect from these. Configured rather than
-      # read off the request, which arrives bearing the internal container host.
-      APP_URL: https://jobs.${ROOT_DOMAIN}
-      AUTH_URL: https://auth.${ROOT_DOMAIN}
-    volumes:
-      - api-socket:/run/api
-    depends_on:
-      - api
 
   # The sign-in and sign-up screens. Reaches the API over the same socket as
   # every other frontend — it holds no credentials of its own and talks to
@@ -77,9 +60,11 @@ services:
     restart: unless-stopped
     environment:
       API_SOCKET_PATH: /run/api/api.sock
-      DEFAULT_REDIRECT_URL: https://jobs.${ROOT_DOMAIN}
+      # No tool to hand off to yet, so sign-in lands back on the auth app's
+      # own page. Point this at the first tool that gets built.
+      DEFAULT_REDIRECT_URL: https://auth.${ROOT_DOMAIN}
       # A ?redirect_to= naming anything else is discarded rather than followed.
-      ALLOWED_REDIRECT_ORIGINS: https://jobs.${ROOT_DOMAIN}
+      ALLOWED_REDIRECT_ORIGINS: https://auth.${ROOT_DOMAIN}
     volumes:
       - api-socket:/run/api
     depends_on:
@@ -117,7 +102,7 @@ services:
       # The apps still proxy /api/auth on their own origins to read sessions
       # and sign out, so requests arrive under more than one Origin and Better
       # Auth turns away any it was not told to expect.
-      BETTER_AUTH_TRUSTED_ORIGINS: https://auth.${ROOT_DOMAIN},https://jobs.${ROOT_DOMAIN}
+      BETTER_AUTH_TRUSTED_ORIGINS: https://auth.${ROOT_DOMAIN}
     volumes:
       - api-socket:/run/api
     # Only on migrate: it already waits for a healthy postgres, and Compose
@@ -145,6 +130,6 @@ volumes:
   postgres-data:
   caddy-data:
   caddy-config:
-  # Carries the API's unix socket between the api and web containers. Holds no
+  # Carries the API's unix socket between the api and auth-web containers. No
   # durable state — safe to delete, it is recreated on the next boot.
   api-socket:

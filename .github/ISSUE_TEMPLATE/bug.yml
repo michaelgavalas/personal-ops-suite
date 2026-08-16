@@ -8,7 +8,6 @@ body:
       label: Where
       options:
         - api
-        - job-finder-web
         - auth
         - db / migrations
         - deployment (docker, caddy)

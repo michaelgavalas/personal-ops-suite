@@ -15,6 +15,13 @@
       "when": 1786467897457,
       "tag": "0001_military_thor_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786906949572,
+      "tag": "0002_glossy_owl",
+      "breakpoints": true
     }
   ]
 }

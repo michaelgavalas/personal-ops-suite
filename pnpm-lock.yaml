@@ -101,55 +101,6 @@ importers:
         specifier: 7.0.2
         version: 7.0.2
 
-  apps/job-finder-web:
-    dependencies:
-      '@repo/api-client':
-        specifier: workspace:*
-        version: link:../../packages/api-client
-      '@repo/auth':
-        specifier: workspace:*
-        version: link:../../packages/auth
-      '@repo/ui':
-        specifier: workspace:*
-        version: link:../../packages/ui
-      next:
-        specifier: 16.3.0
-        version: 16.3.0(@babel/core@7.29.7)(@types/node@20.19.43)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      next-themes:
-        specifier: ^0.4.6
-        version: 0.4.6(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      react:
-        specifier: 19.2.8
-        version: 19.2.8
-      react-dom:
-        specifier: 19.2.8
-        version: 19.2.8(react@19.2.8)
-    devDependencies:
-      '@biomejs/biome':
-        specifier: 2.5.7
-        version: 2.5.7
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../packages/typescript-config
-      '@tailwindcss/postcss':
-        specifier: ^4
-        version: 4.3.3
-      '@types/node':
-        specifier: ^20
-        version: 20.19.43
-      '@types/react':
-        specifier: ^19
-        version: 19.2.18
-      '@types/react-dom':
-        specifier: ^19
-        version: 19.2.4(@types/react@19.2.18)
-      tailwindcss:
-        specifier: ^4
-        version: 4.3.3
-      typescript:
-        specifier: 7.0.2
-        version: 7.0.2
-
   packages/api-auth:
     dependencies:
       '@repo/api-core':

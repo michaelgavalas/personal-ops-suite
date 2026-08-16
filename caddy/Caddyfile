@@ -9,13 +9,9 @@
 	encode zstd gzip
 }
 
-{$JOB_FINDER_DOMAIN} {
-	import common
-	reverse_proxy web:3000
-}
-
-# Sits on a sibling subdomain of the apps it lets people into, which is what
-# lets one session cookie — scoped to the parent domain — cover all of them.
+# The only host for now. A tool added later gets its own block on a sibling
+# subdomain, which is what lets one session cookie — scoped to the parent
+# domain — cover both.
 {$AUTH_DOMAIN} {
 	import common
 	reverse_proxy auth-web:3000

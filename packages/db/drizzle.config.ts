@@ -6,7 +6,7 @@ export default defineConfig({
   out: "./drizzle",
   // Every app schema must be listed here, otherwise drizzle-kit treats its
   // tables as unmanaged and generates drops for them.
-  schemaFilter: ["auth", "job_finder"],
+  schemaFilter: ["auth"],
   dbCredentials: {
     url: process.env.DATABASE_URL ?? "",
   },
