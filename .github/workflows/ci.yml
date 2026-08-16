@@ -95,7 +95,7 @@ jobs:
       # Build only. There is no registry to push to — what this catches is the
       # packaging itself: turbo prune dropping a workspace, or the --prod
       # install leaving the image without something it needs at runtime.
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: .
           file: apps/${{ matrix.app }}/Dockerfile
