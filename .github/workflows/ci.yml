@@ -90,7 +90,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       # Build only. There is no registry to push to — what this catches is the
       # packaging itself: turbo prune dropping a workspace, or the --prod
