@@ -32,7 +32,7 @@ jobs:
       # Replays Turbo's cache so unchanged packages aren't rebuilt. The key
       # carries the SHA so every run writes a fresh entry; restore-keys fall
       # back to the newest prior one, which is what actually gets reused.
-      - uses: actions/cache@v4
+      - uses: actions/cache@v6
         with:
           path: .turbo/cache
           key: turbo-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ github.sha }}
