@@ -169,9 +169,10 @@ After editing a schema in `packages/db/src`, run `db:generate` and commit the
 generated SQL alongside it. Both belong in the same commit — a schema change
 without its migration is a broken deploy waiting to happen.
 
-CI runs lint, types, build, and tests on every pull request, and builds both
-Docker images when anything that affects packaging changes. `main`
-requires a green run to merge into.
+CI runs lint, types, build, and tests on every push and pull request, and
+builds both Docker images when anything that affects packaging changes.
+Nothing gates `main` — this is a one-person repo, and a red run is a thing to
+go and look at rather than a wall.
 
 `check-types` runs `next typegen` before `tsc` in the Next apps. `PageProps`
 and `LayoutProps` are generated into `.next/types`, so without it a cold cache

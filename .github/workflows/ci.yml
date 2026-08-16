@@ -12,8 +12,9 @@ concurrency:
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
 jobs:
-  # Named plainly because the ruleset on main requires this check by name, and
-  # a rename here silently stops that requirement matching anything.
+  # Named plainly so the status reads clearly in the commit list. Nothing
+  # currently requires this check by name, but a ruleset would match on it, so
+  # renaming it is not free.
   check:
     runs-on: ubuntu-latest
     steps:
