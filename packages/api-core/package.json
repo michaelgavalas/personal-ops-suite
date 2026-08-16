@@ -17,10 +17,10 @@
   },
   "dependencies": {
     "@repo/auth": "workspace:*",
-    "hono": "^4.13.1"
+    "hono": "^4.13.2"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.7",
+    "@biomejs/biome": "2.5.8",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "^26.1.1",
     "typescript": "7.0.2"
